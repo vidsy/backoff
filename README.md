@@ -17,7 +17,7 @@ package main
 import (
   "log"
 
-  "github/vidsy/backoff-policy"
+  "github/vidsy/backoff"
 )
 
 func main() {
