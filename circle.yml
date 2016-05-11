@@ -9,7 +9,3 @@ dependencies:
 test:
   override:
     - docker run --rm true "$PWD":/go/src/github.com/vidsy/backoff -w /go/src/github.com/vidsy/backoff golang:1.6.2 go test -v
-
-deployment:
-  override:
-    - echo "No deployment."
