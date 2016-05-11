@@ -1,4 +1,4 @@
-<h1 align="center">backoff-policy</h1>
+<h1 align="center">backoff</h1>
 
 <p align="center">
   <b>Go</b> package for implementing a generic backoff policy.
@@ -47,6 +47,12 @@ func connect(bp backoff.Policy) error {
 
 	return errors.New("Unable to connect after backoff")
 }
+```
+
+### Tests
+
+```
+$ go test -v
 ```
 
 ### Notes
