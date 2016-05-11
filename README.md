@@ -1,10 +1,13 @@
 <h1 align="center">backoff</h1>
 
 <p align="center">
-  <b>Go</b> package for implementing a generic backoff policy.
+  <img src="https://circleci.com/gh/vidsy/backoff/tree/master.svg?style=shield">
 </p>
 
 
+<p align="center">
+  <b>Go</b> package for implementing a generic backoff policy.
+</p>
 
 ### Usage
 
