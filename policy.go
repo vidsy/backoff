@@ -22,7 +22,7 @@ func (p Policy) Sleep(n int) {
 	duration := time.Duration(p.jitter(p.Intervals[n])) * time.Millisecond
 
 	if duration != 0 {
-		log.Printf("%s Backing off for %ds (Attempt #%d)", p.LogPrefix, duration.Seconds(), n)
+		log.Printf("%s Backing off for %.2fs (Attempt #%d)", p.LogPrefix, duration.Seconds(), n)
 	}
 
 	time.Sleep(duration)
