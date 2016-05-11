@@ -1,10 +1,13 @@
-<h1 align="center">backoff-policy</h1>
+<h1 align="center">backoff</h1>
+
+<p align="center">
+  <img src="https://circleci.com/gh/vidsy/backoff/tree/master.svg?style=shield">
+</p>
+
 
 <p align="center">
   <b>Go</b> package for implementing a generic backoff policy.
 </p>
-
-
 
 ### Usage
 
@@ -12,41 +15,39 @@
 package main
 
 import (
-	"errors"
-	"log"
-	"time"
+  "log"
 
-	"github/vidsy/backoff-policy"
+  "github/vidsy/backoff-policy"
 )
 
 func main() {
-	bp := backoff.Policy{
-		Intervals: []int{0, 500, 1000, 2000, 4000, 8000},
-		LogPrefix: "[example]"
-	}
+  bp := backoff.Policy{
+    Intervals: []int{0, 500, 1000, 2000, 4000, 8000},
+    LogPrefix: "[example]"
+  }
 
-	err := connect()
-	if err != nil {
-		log.Fatal(err)
-	}
+  anon := func() bool {
+    attemptConnection()
+  }
 
-	log.Println("Success!")
+  ok := bp.Perform(anon)
+  if !ok {
+    log.Fatal("Failed to connect...")
+  }
+
+  log.Println("Success!")
 }
 
-func connect(bp backoff.Policy) error {
-	for i := 0; i < len(bp.Intervals); i++ {
-		err := doSomething()
-		if err != nil {
-			log.Printf("Error: %s", err.Error())
-			bp.Sleep(i)
-			continue
-		}
-
-		return nil
-	}
-
-	return errors.New("Unable to connect after backoff")
+func attemptConnection() bool {
+  // Do something here...
+  return false
 }
+```
+
+### Tests
+
+```
+$ go test -v
 ```
 
 ### Notes

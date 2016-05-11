@@ -1,0 +1,11 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  override:
+    - echo "No dependencies."
+
+test:
+  override:
+    - docker run --rm -v "$PWD":/go/src/github.com/vidsy/backoff -w /go/src/github.com/vidsy/backoff golang:1.6.2 go test -v
