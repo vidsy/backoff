@@ -11,7 +11,8 @@
 ```go
 package main
 
-import(
+import (
+	"errors"
 	"log"
 	"time"
 
@@ -20,30 +21,38 @@ import(
 
 func main() {
 	bp := backoff.Policy{
-		[]int{0, 500, 1000, 2000, 4000, 8000},
-	},
+		Intervals: []int{0, 500, 1000, 2000, 4000, 8000},
+	}
 
+	err := connect()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Success!")
+}
+
+func connect(bp backoff.Policy) error {
 	for i := 0; i < len(bp.Intervals); i++ {
 		duration := bp.Duration(i)
 		time.Sleep(duration)
 
 		if i != 0 {
-			log.Printf("Backing off for %dms... (Attempt #%d)", duration. i)
+			log.Printf("Backing off for %dms... (Attempt #%d)", duration, i)
 		}
 
 		err := doSomething()
 		if err != nil {
-			if i == len(bp.Intervals) {
-				log.Fatal(err)
-			}
+			log.Printf("Error: %s", err.Error())
 			continue
-		} else {
-			break
 		}
+
+		return nil
 	}
 
-	log.Println("Success!")
+	return errors.New("Unable to connect after backoff")
 }
+
 ```
 
 ### Notes
