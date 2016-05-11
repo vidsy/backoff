@@ -6,15 +6,39 @@ import (
 	"time"
 )
 
-// Policy implements a backoff policy, randomizing its delays.
-type Policy struct {
-	Intervals []int
-	LogPrefix string
+type (
+	// Policy implements a backoff policy, randomizing its delays.
+	Policy struct {
+		Intervals []int
+		LogPrefix string
+	}
+)
+
+// Perform loops through each interval, calls the provided anonymous function,
+// sleeps if it fails, and returns a boolean of the state.
+func (p Policy) Perform(f func() bool) bool {
+	for i := 0; i < len(p.Intervals); i++ {
+		ok := f()
+		if !ok {
+			p.sleep(i)
+			continue
+		}
+		return true
+	}
+	return false
 }
 
-// Sleep calculates a time duration of the n'th wait cycle in a
-// backoff policy. It then sleeps for that duration.
-func (p Policy) Sleep(n int) {
+func (p Policy) jitter(millis int) int {
+	if millis == 0 {
+		return 0
+	}
+
+	// 50 to 150%
+	// x = 100; (100/2 + rand(0..100); e.g: 50 + 72 = 122
+	return millis/2 + rand.Intn(millis)
+}
+
+func (p Policy) sleep(n int) {
 	if n >= len(p.Intervals) {
 		n = len(p.Intervals) - 1
 	}
@@ -26,14 +50,4 @@ func (p Policy) Sleep(n int) {
 	}
 
 	time.Sleep(duration)
-}
-
-// jitter returns a random integer uniformly distributed in the range
-// [0.5 * millis .. 1.5 * millis]
-func (p Policy) jitter(millis int) int {
-	if millis == 0 {
-		return 0
-	}
-
-	return millis/2 + rand.Intn(millis)
 }

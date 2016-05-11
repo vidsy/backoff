@@ -1,6 +1,7 @@
 package backoff
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -23,19 +24,24 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func TestSleep(t *testing.T) {
-	intervals := []int{1000}
+func TestPerform(t *testing.T) {
+	intervals := []int{1000, 1000}
 
 	bp := Policy{
 		Intervals: intervals,
 		LogPrefix: "",
 	}
 
+	anon := func() bool {
+		fmt.Println("Connecting...")
+		return false
+	}
+
 	start := time.Now()
-	bp.Sleep(0)
+	_ = bp.Perform(anon)
 	end := time.Since(start).Seconds()
 
-	if end < 0.5 || end > 1.5 {
-		t.Error(".Sleep() did not sleep for the correct duration.")
+	if end < 1 || end > 3 {
+		t.Error(".Perform() did not sleep for the correct duration.")
 	}
 }
