@@ -22,6 +22,7 @@ import (
 func main() {
 	bp := backoff.Policy{
 		Intervals: []int{0, 500, 1000, 2000, 4000, 8000},
+		LogPrefix: "[example]"
 	}
 
 	err := connect()
@@ -34,16 +35,10 @@ func main() {
 
 func connect(bp backoff.Policy) error {
 	for i := 0; i < len(bp.Intervals); i++ {
-		duration := bp.Duration(i)
-		time.Sleep(duration)
-
-		if i != 0 {
-			log.Printf("Backing off for %dms... (Attempt #%d)", duration, i)
-		}
-
 		err := doSomething()
 		if err != nil {
 			log.Printf("Error: %s", err.Error())
+			bp.Sleep(i)
 			continue
 		}
 
@@ -52,7 +47,6 @@ func connect(bp backoff.Policy) error {
 
 	return errors.New("Unable to connect after backoff")
 }
-
 ```
 
 ### Notes
