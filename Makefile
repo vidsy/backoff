@@ -4,6 +4,8 @@ PATH_BASE = "/go/src/github.com/vidsy"
 REPONAME = "backoff"
 VERSION = $(shell cat ./VERSION)
 
+DEFAULT: test
+
 check-version:
 	git fetch && (! git rev-list ${VERSION})]
 
