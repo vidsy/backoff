@@ -7,7 +7,7 @@ VERSION = $(shell cat ./VERSION)
 DEFAULT: test
 
 check-version:
-	git fetch && (! git rev-list ${VERSION})]
+	git fetch && (! git rev-list ${VERSION})
 
 push-tag:
 	git checkout ${BRANCH}
