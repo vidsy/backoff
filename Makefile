@@ -9,13 +9,6 @@ DEFAULT: test
 check-version:
 	git fetch && (! git rev-list ${VERSION})
 
-install-test-deps:
-	@docker run \
-	-v "${CURDIR}":${PATH_BASE}/${REPONAME} \
-	-e BUILD=false \
-	-w ${PATH_BASE}/${REPONAME} \
-	${GO_BUILDER_IMAGE}
-
 push-tag:
 	git checkout ${BRANCH}
 	git pull origin ${BRANCH}
@@ -23,20 +16,7 @@ push-tag:
 	git push origin ${BRANCH} --tags
 
 test:
-	@docker run \
-	-it \
-	--rm \
-	-v "${CURDIR}":${PATH_BASE}/${REPONAME} \
-	-w ${PATH_BASE}/${REPONAME} \
-	--entrypoint=go \
-	${GO_BUILDER_IMAGE} test .
-
-test-ci:
-	@docker run \
-	-v "${CURDIR}":${PATH_BASE}/${REPONAME} \
-	-w ${PATH_BASE}/${REPONAME} \
-	--entrypoint=go \
-	${GO_BUILDER_IMAGE} test . -cover
+	@go test
 
 test-coverage:
 	@go test -covermode=count -coverprofile=go.backoff.coverage.out .
