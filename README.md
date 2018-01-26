@@ -26,11 +26,15 @@ func main() {
     LogPrefix: "[example]"
   }
 
-  anon := func() bool {
+  anon := func() (bool, error) {
     attemptConnection()
   }
 
-  ok := bp.Perform(anon)
+  ok, err := bp.Perform(anon)
+  if err != nil {
+    log.Fatalf("Error in anon function: %s", err)
+  }
+
   if !ok {
     log.Fatal("Failed to connect...")
   }
