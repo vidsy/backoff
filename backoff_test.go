@@ -1,9 +1,12 @@
 package backoff
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPolicy(t *testing.T) {
@@ -16,34 +19,49 @@ func TestPolicy(t *testing.T) {
 			LogPrefix: logPrefix,
 		}
 
-		if bp.Intervals == nil {
-			t.Error("Intervals not accessible.")
-		}
-
-		if bp.LogPrefix == "" {
-			t.Error("LogPrefix not accessible.")
-		}
+		assert.NotNil(t, bp.Intervals)
+		assert.NotNil(t, bp.LogPrefix)
 	})
 
 	t.Run(".Perform", func(t *testing.T) {
-		intervals := []int{1000, 1000}
+		t.Run("IncorrectSleepDuration", func(t *testing.T) {
+			intervals := []int{1000, 1000}
 
-		bp := Policy{
-			Intervals: intervals,
-			LogPrefix: "",
-		}
+			bp := Policy{
+				Intervals: intervals,
+				LogPrefix: "",
+			}
 
-		anon := func() bool {
-			fmt.Println("Connecting...")
-			return false
-		}
+			anon := func() (bool, error) {
+				fmt.Println("Connecting...")
+				return false, nil
+			}
 
-		start := time.Now()
-		_ = bp.Perform(anon)
-		end := time.Since(start).Seconds()
+			start := time.Now()
+			bp.Perform(anon)
+			end := time.Since(start).Seconds()
 
-		if end < 1 || end > 3 {
-			t.Error(".Perform() did not sleep for the correct duration.")
-		}
+			if end < 1 || end > 3 {
+				t.Error(".Perform() did not sleep for the correct duration.")
+			}
+		})
+
+		t.Run("ReturnsError", func(t *testing.T) {
+			intervals := []int{1000, 1000}
+
+			bp := Policy{
+				Intervals: intervals,
+				LogPrefix: "",
+			}
+
+			anon := func() (bool, error) {
+				return false, errors.New("Function error")
+			}
+
+			ok, err := bp.Perform(anon)
+
+			assert.Error(t, err)
+			assert.False(t, ok)
+		})
 	})
 }

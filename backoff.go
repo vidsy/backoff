@@ -16,16 +16,21 @@ type (
 
 // Perform loops through each interval, calls the provided anonymous function,
 // sleeps if it fails, and returns a boolean of the state.
-func (p Policy) Perform(f func() bool) bool {
+func (p Policy) Perform(f func() (bool, error)) (bool, error) {
 	for i := 0; i < len(p.Intervals); i++ {
-		ok := f()
+		ok, err := f()
+		if err != nil {
+			return false, err
+		}
+
 		if !ok {
 			p.sleep(i)
 			continue
 		}
-		return true
+
+		return true, nil
 	}
-	return false
+	return false, nil
 }
 
 func (p Policy) jitter(millis int) int {
