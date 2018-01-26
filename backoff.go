@@ -30,6 +30,7 @@ func (p Policy) Perform(f func() (bool, error)) (bool, error) {
 
 		return true, nil
 	}
+
 	return false, nil
 }
 
