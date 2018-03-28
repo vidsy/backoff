@@ -1,7 +1,7 @@
 package backoff
 
 import (
-	"log"
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -9,8 +9,9 @@ import (
 type (
 	// Policy implements a backoff policy, randomizing its delays.
 	Policy struct {
-		Intervals []int
-		LogPrefix string
+		Intervals         []int
+		LogMessageHandler func(message string)
+		LogPrefix         string
 	}
 )
 
@@ -44,15 +45,19 @@ func (p Policy) jitter(millis int) int {
 	return millis/2 + rand.Intn(millis)
 }
 
-func (p Policy) sleep(n int) {
+func (p *Policy) sleep(n int) {
 	if n >= len(p.Intervals) {
 		n = len(p.Intervals) - 1
 	}
 
 	duration := time.Duration(p.jitter(p.Intervals[n])) * time.Millisecond
 
-	if duration != 0 {
-		log.Printf("%s Backing off for %.2fs (Attempt #%d)", p.LogPrefix, duration.Seconds(), n)
+	if duration != 0 && p.LogMessageHandler != nil {
+		p.LogMessageHandler(
+			fmt.Sprintf(
+				"%s Backing off for %.2fs (Attempt #%d)", p.LogPrefix, duration.Seconds(), n,
+			),
+		)
 	}
 
 	time.Sleep(duration)

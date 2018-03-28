@@ -23,7 +23,9 @@ import (
 func main() {
   bp := backoff.Policy{
     Intervals: []int{0, 500, 1000, 2000, 4000, 8000},
-    LogPrefix: "[example]"
+    LogMessageHandler: func(message string) {
+      log.Printf("Log message from backoff.Policy: %s", message)
+    }
   }
 
   anon := func() (bool, error) {
