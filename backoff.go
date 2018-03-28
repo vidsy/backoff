@@ -11,7 +11,6 @@ type (
 	Policy struct {
 		Intervals         []int
 		LogMessageHandler func(message string)
-		LogPrefix         string
 	}
 )
 
@@ -45,7 +44,7 @@ func (p Policy) jitter(millis int) int {
 	return millis/2 + rand.Intn(millis)
 }
 
-func (p *Policy) sleep(n int) {
+func (p Policy) sleep(n int) {
 	if n >= len(p.Intervals) {
 		n = len(p.Intervals) - 1
 	}
@@ -55,7 +54,7 @@ func (p *Policy) sleep(n int) {
 	if duration != 0 && p.LogMessageHandler != nil {
 		p.LogMessageHandler(
 			fmt.Sprintf(
-				"%s Backing off for %.2fs (Attempt #%d)", p.LogPrefix, duration.Seconds(), n,
+				"Backing off for %.2fs (Attempt #%d)", duration.Seconds(), n,
 			),
 		)
 	}
