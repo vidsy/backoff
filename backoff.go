@@ -54,7 +54,7 @@ func (p Policy) sleep(n int) {
 	if duration != 0 && p.LogMessageHandler != nil {
 		p.LogMessageHandler(
 			fmt.Sprintf(
-				"Backing off for %.2fs (Attempt #%d)", duration.Seconds(), n+1,
+				"Backing off for %.2fs (attempt %d/%d)", duration.Seconds(), n+1, len(p.Intervals)+1,
 			),
 		)
 	}
