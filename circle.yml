@@ -52,6 +52,7 @@ workflows:
   nightly-tests:
     jobs:
       - go/test:
+          name: "nightly-tests"
           <<: *vendor-cache-key
           <<: *working-directory
     triggers:
