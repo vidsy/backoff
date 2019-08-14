@@ -17,10 +17,12 @@ type (
 // Perform loops through each interval, calls the provided anonymous function,
 // sleeps if it fails, and returns a boolean of the state.
 func (p Policy) Perform(f func() (bool, error)) (bool, error) {
+	var errors Errors
+
 	for i := 0; i < len(p.Intervals); i++ {
 		ok, err := f()
 		if err != nil {
-			return false, err
+			errors = append(errors, err)
 		}
 
 		if !ok {
@@ -29,6 +31,10 @@ func (p Policy) Perform(f func() (bool, error)) (bool, error) {
 		}
 
 		return true, nil
+	}
+
+	if len(errors) > 0 {
+		return false, errors
 	}
 
 	return false, nil

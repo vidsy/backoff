@@ -1,29 +1,20 @@
-package backoff
+package backoff_test
 
 import (
 	"errors"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/vidsy/backoff"
 )
 
 func TestPolicy(t *testing.T) {
-	t.Run(".{}", func(t *testing.T) {
-		intervals := []int{0, 200, 400}
-
-		bp := Policy{
-			Intervals: intervals,
-		}
-
-		assert.NotNil(t, bp.Intervals)
-	})
-
-	t.Run(".Perform", func(t *testing.T) {
+	t.Run("Perform", func(t *testing.T) {
 		t.Run("IncorrectSleepDuration", func(t *testing.T) {
 			intervals := []int{1000, 1000}
 
-			bp := Policy{
+			bp := backoff.Policy{
 				Intervals: intervals,
 			}
 
@@ -32,7 +23,10 @@ func TestPolicy(t *testing.T) {
 			}
 
 			start := time.Now()
-			bp.Perform(anon)
+			ok, err := bp.Perform(anon)
+			require.NoError(t, err)
+			require.False(t, ok)
+
 			end := time.Since(start).Seconds()
 
 			if end < 1 || end > 3 {
@@ -44,7 +38,7 @@ func TestPolicy(t *testing.T) {
 			intervals := []int{1000, 1000}
 			handlerCalled := false
 
-			bp := Policy{
+			bp := backoff.Policy{
 				Intervals: intervals,
 				LogMessageHandler: func(message string) {
 					handlerCalled = true
@@ -63,15 +57,15 @@ func TestPolicy(t *testing.T) {
 
 			ok, err := bp.Perform(anon)
 
-			assert.Nil(t, err)
-			assert.True(t, ok)
-			assert.True(t, handlerCalled)
+			require.Nil(t, err)
+			require.True(t, ok)
+			require.True(t, handlerCalled)
 		})
 
-		t.Run("ReturnsError", func(t *testing.T) {
+		t.Run("ReturnsErrors", func(t *testing.T) {
 			intervals := []int{1000, 1000}
 
-			bp := Policy{
+			bp := backoff.Policy{
 				Intervals: intervals,
 			}
 
@@ -80,9 +74,10 @@ func TestPolicy(t *testing.T) {
 			}
 
 			ok, err := bp.Perform(anon)
-
-			assert.Error(t, err)
-			assert.False(t, ok)
+			require.Error(t, err)
+			require.False(t, ok)
+			require.IsType(t, backoff.Errors{}, err)
+			require.Len(t, err.(backoff.Errors), 2)
 		})
 	})
 }
