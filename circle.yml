@@ -1,81 +1,64 @@
-version: 2
-jobs:
-  build:
-    working_directory: /go/src/github.com/vidsy/backoff
-    docker:
-      - image: vidsyhq/go-builder:latest
-    steps:
-      - checkout
-      - restore_cache:
-          key: dependency-cache-{{ .Revision }}
-      - run: BUILD=false /scripts/build.sh
-      - save_cache:
-          key: dependency-cache-{{ .Revision }}
-          paths:
-            - vendor
-  test:
-    working_directory: /go/src/github.com/vidsy/backoff
-    docker:
-      - image: vidsyhq/go-builder:latest
-    steps:
-      - checkout
-      - restore_cache:
-          key: dependency-cache-{{ .Revision }}
-      - run: make test
-  check_version:
-    working_directory: /go/src/github.com/vidsy/backoff
-    docker:
-      - image: vidsyhq/go-builder:latest
-    steps:
-      - checkout
-      - run: make check-version
+version: 2.1
+
+orbs:
+  common: vidsy/common@volatile
+  go: vidsy/go@volatile
+  services: vidsy/services@volatile
+
+ignore-master: &ignore-master
+  filters:
+    branches:
+      ignore: master
+
+require-install: &require-install
+  requires:
+    - go/install
+
+tagged-build: &tagged-build
+  tags:
+    only: /v[0-9]+\.[0-9]+\.[0-9]+/
+
+vendor-cache-key: &vendor-cache-key
+  vendor-cache-key: vendor-cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ checksum "go.sum" }}-v1
+
+working-directory: &working-directory
+  working-directory: /backoff
 
 workflows:
-  version: 2
-  build_test:
+  build-test-deploy:
     jobs:
-      - build:
+      - common/check-for-clubhouse-ticket-comment:
+          context: org-github-docker-hub
+          <<: *ignore-master
+      - common/check-version:
+          <<: *ignore-master
+      - go/install:
           filters:
-            tags:
-              only: /[0-9]+\.[0-9]+\.[0-9]+/
-            branches:
-              ignore: master
-      - test:
-          requires:
-            - build
+            <<: *tagged-build
+          <<: *vendor-cache-key
+          <<: *working-directory
+      - go/test:
           filters:
-            tags:
-              only: /[0-9]+\.[0-9]+\.[0-9]+/
-            branches:
-              ignore: master
-      - check_version:
+            <<: *tagged-build
+          <<: *require-install
+          <<: *vendor-cache-key
+          <<: *working-directory
+      - go/vet:
+          <<: *ignore-master
+          <<: *require-install
+          <<: *vendor-cache-key
+          <<: *working-directory
+
+  nightly-tests:
+    jobs:
+      - go/test:
+          name: "nightly-tests"
+          <<: *vendor-cache-key
+          <<: *working-directory
+    triggers:
+      - schedule:
+          cron: "0 5 * * *"
           filters:
             branches:
-              ignore: master
-
-
-
-
-
-
-
-
-
-
-general:
-  branches:
-    ignore:
-      - master
-
-machine:
-  services:
-    - docker
-
-dependencies:
-  override:
-    - make install-test-deps
-
-test:
-  override:
-    - make check-version
-    - make test-ci
+              only:
+                - master
